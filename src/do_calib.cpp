@@ -75,7 +75,7 @@ bool DoCalib::running()
   return state_ != DONE;
 }
 
-void DoCalib::imuCallback(lino_msgs::Imu::ConstPtr imu)
+void DoCalib::imuCallback(sensor_msgs::Imu::ConstPtr imu)
 {
   bool accepted;
 

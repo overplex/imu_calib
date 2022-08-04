@@ -45,10 +45,7 @@ namespace imu_calib
 {
 
 ApplyCalib::ApplyCalib() :
-  gyro_sample_count_(0),
-  gyro_bias_x_(0.0),
-  gyro_bias_y_(0.0),
-  gyro_bias_z_(0.0)
+  gyro_sample_count_(0)
 {
   ros::NodeHandle nh;
   ros::NodeHandle nh_private("~");
@@ -64,16 +61,18 @@ ApplyCalib::ApplyCalib() :
 
   nh_private.param<bool>("calibrate_gyros", calibrate_gyros_, true);
   nh_private.param<int>("gyro_calib_samples", gyro_calib_samples_, 100);
+  nh_private.param<double>("gyro_bias_x", gyro_bias_x_, 0.0);
+  nh_private.param<double>("gyro_bias_y", gyro_bias_y_, 0.0);
+  nh_private.param<double>("gyro_bias_z", gyro_bias_z_, 0.0);
 
   int queue_size;
   nh_private.param<int>("queue_size", queue_size, 5);
 
   raw_sub_ = nh.subscribe("raw_imu", queue_size, &ApplyCalib::rawImuCallback, this);
   corrected_pub_ = nh.advertise<sensor_msgs::Imu>("imu/data_raw", queue_size);
-  mag_pub_ = nh.advertise<sensor_msgs::MagneticField>("imu/mag", queue_size);
 }
 
-void ApplyCalib::rawImuCallback(lino_msgs::Imu::ConstPtr raw)
+void ApplyCalib::rawImuCallback(sensor_msgs::Imu::ConstPtr raw)
 {
   if (calibrate_gyros_)
   {
@@ -138,18 +137,6 @@ void ApplyCalib::rawImuCallback(lino_msgs::Imu::ConstPtr raw)
 
   //publish calibrated IMU data
   corrected_pub_.publish(corrected);
-
-
-  sensor_msgs::MagneticField mag_msg;
-
-  mag_msg.header.stamp = ros::Time::now();
-
-  //scale received magnetic (miligauss to tesla)
-  mag_msg.magnetic_field.x = raw->magnetic_field.x;
-  mag_msg.magnetic_field.y = raw->magnetic_field.y;
-  mag_msg.magnetic_field.z = raw->magnetic_field.z;
-  
-  mag_pub_.publish(mag_msg);
 }
 
 } // namespace accel_calib
